@@ -1,0 +1,119 @@
+// ======================
+// Modelo Hospitalario 
+// ======================
+
+// --- BASE CENTRAL ---
+Table Hospital {
+  id int [pk, increment]
+  nombre varchar
+  direccion varchar
+}
+
+// --- NIVEL PERSONA  ---
+Table Persona {
+  id int [pk, increment]
+  hospital_id int [ref: > Hospital.id] // Asociación con Hospital
+  nombre varchar
+  dni varchar
+  edad int
+}
+
+// --- HERENCIA  ---
+Table Paciente {
+  id int [pk, increment]
+  persona_id int [ref: > Persona.id]
+  nroHistoria varchar
+}
+
+Table Doctor {
+  id int [pk, increment]
+  persona_id int [ref: > Persona.id]
+  especialidad varchar
+}
+
+Table Enfermera {
+  id int [pk, increment]
+  persona_id int [ref: > Persona.id]
+  turno varchar
+}
+
+// --- ASOCIACIÓN (Paciente y Doctor mediante Cita) ---
+Table Cita {
+  id int [pk, increment]
+  paciente_id int [ref: > Paciente.id]
+  doctor_id int [ref: > Doctor.id]
+  fecha datetime
+  motivo varchar
+}
+
+// --- COMPOSICIÓN (Historia Clínica depende del Paciente) ---
+Table HistoriaClinica {
+  id int [pk, increment]
+  paciente_id int [ref: > Paciente.id]
+  diagnostico text
+  tratamiento text
+}
+
+// --- AGREGACIÓN (Paciente ocupa una Habitación) ---
+Table Habitacion {
+  id int [pk, increment]
+  hospital_id int [ref: > Hospital.id]
+  numero varchar
+  tipo varchar
+  disponible boolean
+}
+
+Table PacienteHabitacion {
+  paciente_id int [ref: > Paciente.id]
+  habitacion_id int [ref: > Habitacion.id]
+  fechaIngreso datetime
+  fechaSalida datetime
+}
+
+// --- DEPENDENCIA (Doctor receta Medicamento a Paciente) ---
+Table Medicamento {
+  id int [pk, increment]
+  nombre varchar
+  dosis varchar
+}
+
+Table Prescripcion {
+  id int [pk, increment]
+  doctor_id int [ref: > Doctor.id]
+  paciente_id int [ref: > Paciente.id]
+  medicamento_id int [ref: > Medicamento.id]
+  fecha datetime
+  indicaciones text
+}
+
+// --- NUEVA CLASE: Factura (para pacientes atendidos) ---
+Table Factura {
+  id int [pk, increment]
+  paciente_id int [ref: > Paciente.id]
+  fecha datetime
+  monto decimal
+  descripcion text
+}
+
+// --- NUEVA CLASE: Turno (para Enfermeras) ---
+Table Turno {
+  id int [pk, increment]
+  enfermera_id int [ref: > Enfermera.id]
+  horaInicio datetime
+  horaFin datetime
+}
+
+
+Ref: "PacienteHabitacion"."habitacion_id" < "PacienteHabitacion"."fechaIngreso"
+
+Ref: "Cita"."fecha" < "Cita"."motivo"
+
+Ref: "Habitacion"."hospital_id" < "Habitacion"."id"
+
+Ref: "Cita"."id" < "HistoriaClinica"."id"
+
+Ref: "Hospital"."nombre" < "Hospital"."id"
+
+Ref: "Prescripcion"."id" < "Prescripcion"."fecha"
+
+Ref: "Hospital"."direccion" < "Hospital"."id"
